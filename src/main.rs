@@ -41,7 +41,7 @@ fn day2() -> io::Result<()> {
     Ok(())
 }
 
-fn day3() -> io::Result<()> {
+fn day3_1() -> io::Result<()> {
     let f = BufReader::new(File::open("data/3.txt")?);
     let mut total = 0;
     
@@ -58,6 +58,26 @@ fn day3() -> io::Result<()> {
     Ok(())
 }
 
+fn day3_2() -> io::Result<()> {
+    let f = BufReader::new(File::open("data/3.txt")?);
+    let mut total = 0;
+    
+    let mut buf = [String::new(), String::new(), String::new()];
+    for (i, line) in f.lines().enumerate() {
+        let x = line?;
+        let i = i % 3;
+        buf[i] = x;
+        if i == 2 {
+            let c = buf[0].chars().find(|&c| buf[1].contains(c) && buf[2].contains(c)).unwrap();
+            total += if c.is_uppercase() { 26 } else { 0 };
+            total += c.to_digit(36).unwrap() - 9;
+        };
+    }
+
+    println!("3-2: {}", total);
+    Ok(())
+}
+
 fn main() -> io::Result<()> {
     let mut input = String::new();
     print!("{}", "Enter day number: ");
@@ -66,7 +86,7 @@ fn main() -> io::Result<()> {
     match input.trim_end().parse().unwrap() {
         1 => day1(),
         2 => day2(),
-        3 => day3(),
+        3 => { day3_1()?; day3_2() },
         _ => {
             println!("Incorrect day number: {}", input.as_str());
             Ok(())
