@@ -3,12 +3,11 @@ use std::io::prelude::*;
 use std::io::{self, BufReader};
 
 fn day1() -> io::Result<()> {
-    let f = File::open("data/1.txt")?;
-    let fr = BufReader::new(f);
+    let f = BufReader::new(File::open("data/1.txt")?);
     let mut totals = Vec::new();
-    let mut running_sum = 0u64;
+    let mut running_sum = 0;
 
-    for line in fr.lines() {
+    for line in f.lines() {
         let x = line?;
         if x.is_empty() {
             totals.push(running_sum);
@@ -24,6 +23,41 @@ fn day1() -> io::Result<()> {
     Ok(())
 }
 
+fn day2() -> io::Result<()> {
+    let f = BufReader::new(File::open("data/2.txt")?);
+    let pos1 = ["", "B X", "C Y", "A Z", "A X", "B Y", "C Z", "C X", "A Y", "B Z"];
+    let pos2 = ["", "B X", "C X", "A X", "A Y", "B Y", "C Y", "C Z", "A Z" ,"B Z"];
+    let mut total1 = 0;
+    let mut total2 = 0;
+
+    for line in f.lines() {
+        let x = line?;
+        total1 += pos1.iter().position(|&p| x.eq(p)).unwrap();
+        total2 += pos2.iter().position(|&p| x.eq(p)).unwrap();
+    }
+    
+    println!("2-1: {}", total1);
+    println!("2-2: {}", total2);
+    Ok(())
+}
+
+fn day3() -> io::Result<()> {
+    let f = BufReader::new(File::open("data/3.txt")?);
+    let mut total = 0;
+    
+    for line in f.lines() {
+        let x = line?;
+        let (l, r) = x.split_at(x.len() / 2);
+        if let Some(c) = l.chars().find(|&c| r.contains(c)) {
+            total += if c.is_uppercase() { 26 } else { 0 };
+            total += c.to_digit(36).unwrap() - 9;
+        }
+    }
+
+    println!("3-1: {}", total);
+    Ok(())
+}
+
 fn main() -> io::Result<()> {
     let mut input = String::new();
     print!("{}", "Enter day number: ");
@@ -31,6 +65,8 @@ fn main() -> io::Result<()> {
     io::stdin().read_line(&mut input)?;
     match input.trim_end().parse().unwrap() {
         1 => day1(),
+        2 => day2(),
+        3 => day3(),
         _ => {
             println!("Incorrect day number: {}", input.as_str());
             Ok(())
