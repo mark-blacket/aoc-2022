@@ -130,6 +130,25 @@ fn day5(task: u32) -> io::Result<()> {
     Ok(())
 }
 
+fn day6(size: usize, task: u32) -> io::Result<()> {
+    let mut s = String::new();
+    let mut f = BufReader::new(File::open("data/6.txt")?);
+    f.read_line(&mut s)?;
+
+    for start in 0..s.len()-size { 
+        let mut found = false;
+        s[start..start+size-1].chars().enumerate().for_each(|(i, c)| {
+            found |= s[start+i+1..start+size].contains(c);
+        });
+        if !found {
+            println!("6-{}: {}, {}", task, start + size, &s[start..start+size]);
+            break;
+        }
+    }
+
+    Ok(())
+}
+
 fn main() -> io::Result<()> {
     let mut input = String::new();
     print!("{}", "Enter day number: ");
@@ -141,6 +160,7 @@ fn main() -> io::Result<()> {
         3 => { day3_1()?; day3_2() },
         4 => day4(),
         5 => { day5(1)?; day5(2) },
+        6 => { day6(4, 1)?; day6(14, 2) },
         _ => {
             println!("Incorrect day number: {}", input.as_str());
             Ok(())
