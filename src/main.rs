@@ -1,7 +1,12 @@
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{self, BufReader};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+// use std::thread;
+// use std::time::Duration;
+
+#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
+struct Point { x: i64, y: i64 }
 
 fn day1() -> io::Result<()> {
     let f = BufReader::new(File::open("data/1.txt")?);
@@ -225,21 +230,90 @@ fn day8() -> io::Result<()> {
     Ok(())
 }
 
+fn day9(points: usize, task: usize) -> io::Result<()> {
+    let f = BufReader::new(File::open("data/9.txt")?);
+    let mut p = vec![Point { x: 0, y: 0 }; points];
+    let mut pos = HashSet::new();
+
+    for line in f.lines() {
+        let line = line?;
+        let (dir, n) = line.split_once(' ').unwrap();
+        let n = n.parse::<i64>().unwrap();
+        let dir = match dir {
+            "L" => | p: &mut Point | p.x -= 1,
+            "R" => | p: &mut Point | p.x += 1,
+            "D" => | p: &mut Point | p.y -= 1,
+            "U" => | p: &mut Point | p.y += 1,
+            _   => panic!()
+        };
+
+        for _ in 0..n {
+            dir(&mut p[0]);
+            for i in 1..points {
+                let (x_diff, y_diff) = (p[i - 1].x - p[i].x, p[i - 1].y - p[i].y);
+                match (x_diff.abs(), y_diff.abs()) {
+                    (2, 2) => { p[i].x += x_diff.signum(); p[i].y += y_diff.signum() },
+                    (2, _) => { p[i].x += x_diff.signum(); p[i].y += y_diff; },
+                    (_, 2) => { p[i].x += x_diff; p[i].y += y_diff.signum(); },
+                    (_, _) => ()
+                };
+            }
+            pos.insert(p[points - 1]);
+        }
+    }
+    
+    println!("9-{}: {}", task, pos.len());
+    Ok(())
+}
+
+fn day10() -> io::Result<()> {
+    let f = BufReader::new(File::open("data/10.txt")?);
+    let (mut c, mut x) = (0, 1);
+    let mut sum = 0;
+    let mut crt = String::with_capacity(256);
+    
+    fn cycle(c: &mut i64, x: &mut i64, sum: &mut i64, crt: &mut String) {
+        if *c % 40 == 0 { crt.push('\n'); }
+        let cmod = *c % 40;
+        *c += 1;
+        crt.push(if cmod >= *x - 1 && cmod <= *x + 1 { '#' } else { '.' });
+        if [20, 60, 100, 140, 180, 220].contains(&c) { *sum += *c * *x; }
+    }
+
+    for line in f.lines() {
+        match line?.split_once(' ') {
+            None         => cycle(&mut c, &mut x, &mut sum, &mut crt),
+            Some((_, n)) => {
+                let n = n.parse::<i64>().unwrap();
+                cycle(&mut c, &mut x, &mut sum, &mut crt);
+                cycle(&mut c, &mut x, &mut sum, &mut crt);
+                x += n;
+            }
+        }
+    }
+
+    println!("10-1: {}", sum);
+    println!("10-2: {}", crt);
+    Ok(())
+}
+
 fn main() -> io::Result<()> {
     let mut input = String::new();
     print!("{}", "Enter day number: ");
     io::stdout().flush()?;
     io::stdin().read_line(&mut input)?;
     match input.trim_end().parse().unwrap() {
-        1 => day1(),
-        2 => day2(),
-        3 => { day3_1()?; day3_2() },
-        4 => day4(),
-        5 => { day5(1)?; day5(2) },
-        6 => { day6(4, 1)?; day6(14, 2) },
-        7 => day7(),
-        8 => day8(),
-        _ => {
+        1  => day1(),
+        2  => day2(),
+        3  => { day3_1()?; day3_2() },
+        4  => day4(),
+        5  => { day5(1)?; day5(2) },
+        6  => { day6(4, 1)?; day6(14, 2) },
+        7  => day7(),
+        8  => day8(),
+        9  => { day9(2, 1)?; day9(10, 2) },
+        10 => day10(),
+        _  => {
             println!("Incorrect day number: {}", input.as_str());
             Ok(())
         }
