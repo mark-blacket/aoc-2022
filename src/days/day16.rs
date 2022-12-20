@@ -44,15 +44,13 @@ fn solutions(start: &str, steps: i64, valves: &HashMap<String, Valve>,
     let filtered = valves.iter().filter(|(k, v)| {
         v.rate > 0 && !visited.iter().any(|(x, _)| k == x)
     }).collect::<Vec<_>>();
-    if filtered.len() == 0 { vec.push(Path::new(&visited, valves)); }
+    vec.push(Path::new(&visited, valves));
     for (k, _) in filtered {
         let s = steps - dist[start][k] - 1;
         if s > 0 {
             let mut visited = visited.clone();
             visited.push((k, s));
             vec.append(&mut solutions(k, s, valves, dist, visited));
-        } else {
-            vec.push(Path::new(&visited, valves)); 
         }
     }
     vec
@@ -71,11 +69,28 @@ pub fn run() -> io::Result<()> {
                 .collect::<Vec<_>>()
         });
     }
-
     let dist = floyd_warshall(&valves);
-    let mut sols = solutions("AA", 30, &valves, &dist, vec![]);
-    sols.sort_by(|a, b| b.score.cmp(&a.score));
-    println!("16-1: {}, {}", sols[0].score, sols[0].path.join("->"));
+
+    let sols1 = solutions("AA", 30, &valves, &dist, vec![]);
+    let max = sols1.iter().max_by(|a, b| a.score.cmp(&b.score)).unwrap();
+    println!("16-1: {}, {}", max.score, max.path.join("->"));
+
+    let mut pairs = vec![];
+    let mut sols2 = solutions("AA", 26, &valves, &dist, vec![]);
+    let mut max_pair = (0, &vec![], &vec![]);
+    sols2.sort_by(|a, b| b.score.cmp(&a.score));
+    for i in 0..sols2.len() - 1 {
+        for j in i + 1..sols2.len() {
+            if !sols2[i].path.iter().any(|x| sols2[j].path.contains(x)) {
+                let score = sols2[i].score + sols2[j].score;
+                pairs.push((score, &sols2[i].path, &sols2[j].path));
+            }
+        }
+        if let Some(x) = pairs.iter().max_by(|a, b| a.0.cmp(&b.0)) {
+            if x.0 == max_pair.0 { break } else { max_pair = *x }
+        }
+    }
+    println!("16-2: {}, {}, {}", pairs[0].0, pairs[0].1.join("->"), pairs[0].2.join("->"));
 
     Ok(())
 }
