@@ -22,6 +22,8 @@ mod days {
     pub mod day18;
     pub mod day19;
     pub mod day20;
+    // pub mod day21;
+    pub mod day22;
 }
 
 use days::*;
@@ -52,6 +54,8 @@ fn main() -> io::Result<()> {
         18 => day18::run(),
         19 => day19::run(),
         20 => day20::run(),
+        // 21 => day21::run(),
+        22 => day22::run(),
         _  => {
             println!("Incorrect day number: {}", input.as_str());
             Ok(())
